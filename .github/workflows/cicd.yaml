@@ -84,6 +84,9 @@ jobs:
         id: git_commit
         run: echo "IMAGE_TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
+      - name: show image tag value
+        run: echo $IMAGE_TAG
+
       - name: Scan Docker image
         uses: aquasecurity/trivy-action@master
         env:   

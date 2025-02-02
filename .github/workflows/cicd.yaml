@@ -9,45 +9,51 @@ on:
 
 jobs:
 
-  sonarqube:
-    name: Code Quality and Coverage (SonarQube)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-      - name: Install Dependencies
-        run: npm install
-      - name: Run Tests with Coverage
-        run: npm test -- --coverage
-      - name: SonarQube Scan
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        run: |
-          npx sonarqube-scanner \
-            -Dsonar.projectKey=africa-map \
-            -Dsonar.sources=. \
-            -Dsonar.host.url=$SONAR_HOST_URL \
-            -Dsonar.login=$SONAR_TOKEN \
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-
-  # security_scans:
-  #   name: Security Scan (Snyk & Trivy)
+  # sonarqube:
+  #   name: Code Quality and Coverage (SonarQube)
   #   runs-on: ubuntu-latest
   #   steps:
   #     - name: Checkout Repository
   #       uses: actions/checkout@v3
   #     - name: Install Dependencies
   #       run: npm install
-  #     - name: Run Snyk Security Scan
-  #       run: npx snyk test || true
+  #     - name: Run Tests with Coverage
+  #       run: npm test -- --coverage
+  #     - name: SonarQube Scan
   #       env:
-  #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-  #     - name: Scan Docker Image with Trivy
+  #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  #         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
   #       run: |
-  #         docker build -t my-app .
-  #         docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasecurity/trivy image my-app
-    
+  #         npx sonarqube-scanner \
+  #           -Dsonar.projectKey=africa-map \
+  #           -Dsonar.sources=. \
+  #           -Dsonar.host.url=$SONAR_HOST_URL \
+  #           -Dsonar.login=$SONAR_TOKEN \
+  #           -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+
+  trivy-scan-pre-build:
+    name: Trivy scans - pre-build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scan Dockerfile
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'config'
+          severity: 'HIGH,CRITICAL'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          config: 'Dockerfile'
+
+      - name: Scan source code
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          severity: 'HIGH,CRITICAL'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          path: '.'
 
   build-and-push:
     name: Build & Push Docker Image
@@ -68,7 +74,47 @@ jobs:
           IMAGE_NAME=africa-map-image
           IMAGE_TAG=$(git rev-parse --short HEAD)
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME:$IMAGE_TAG .
+
+  trivy-scan-post-build:
+    name: Trivy scans - post-build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scan Docker image
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'image'
+          severity: 'HIGH,CRITICAL'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          image-ref: 'my-image:latest'
+
+  push-docker-image:
+    name: Push Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Push Docker Image
+        run: |
+          IMAGE_NAME=africa-map-image
+          IMAGE_TAG=$(git rev-parse --short HEAD)
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME:$IMAGE_TAG
+
+  # security_scans:
+  #   name: Security Scan (Snyk & Trivy)
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v3
+  #     - name: Install Dependencies
+  #       run: npm install
+  #     - name: Run Snyk Security Scan
+  #       run: npx snyk test || true
+  #       env:
+  #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+  #     - name: Scan Docker Image with Trivy
+  #       run: |
+  #         docker build -t my-app .
+  #         docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasecurity/trivy image my-app
 
     #   - name: Update Kubernetes Manifest
     #     run: |

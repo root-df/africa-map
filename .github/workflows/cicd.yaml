@@ -91,7 +91,7 @@ jobs:
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
-          image-ref: ${{ env.IMAGE_NAME }}: ${{ env.IMAGE_TAG }}
+          image-ref: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
   push-docker-image:
     name: Push Docker image

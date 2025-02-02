@@ -91,7 +91,7 @@ jobs:
           echo "Commit Hash: $IMAGE_TAG"
 
       - name: show image tag value
-        run: echo $IMAGE_TAG
+        run: echo $IMAGE_TAG && docker images
 
       - name: Scan Docker image
         uses: aquasecurity/trivy-action@master

@@ -55,8 +55,8 @@ jobs:
           ignore-unfixed: true
           path: '.'
 
-  build-and-push:
-    name: Build & Scan Docker Image
+  build-and-scan:
+    name: Build + Trivy Scan + Push Docker Image  
     runs-on: ubuntu-latest
     needs: trivy-scan-pre-build
     steps:
@@ -105,11 +105,11 @@ jobs:
           ignore-unfixed: true
           image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
-  push-docker-image:
-    name: Push Docker image
-    runs-on: ubuntu-latest
-    needs: build-and-push
-    steps:
+  # push-docker-image:
+  #   name: Push Docker image
+  #   runs-on: ubuntu-latest
+  #   needs: build-and-push
+  #   steps:
       - name: Push Docker Image
         run: |
           IMAGE_NAME=africa-map-image

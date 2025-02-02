@@ -8,10 +8,51 @@ on:
     branches: [ "main" ]
 
 jobs:
+
+  sonarqube:
+    name: Code Quality and Coverage (SonarQube)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Install Dependencies
+        run: npm install
+      - name: Run Tests with Coverage
+        run: npm test -- --coverage
+      - name: SonarQube Scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      run: |
+        npx sonarqube-scanner \
+          -Dsonar.projectKey=africa-map \
+          -Dsonar.sources=. \
+          -Dsonar.host.url=$SONAR_HOST_URL \
+          -Dsonar.login=$SONAR_TOKEN \
+          -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+
+  # security_scans:
+  #   name: Security Scan (Snyk & Trivy)
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v3
+  #     - name: Install Dependencies
+  #       run: npm install
+  #     - name: Run Snyk Security Scan
+  #       run: npx snyk test || true
+  #       env:
+  #         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+  #     - name: Scan Docker Image with Trivy
+  #       run: |
+  #         docker build -t my-app .
+  #         docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasecurity/trivy image my-app
+    
+
   build-and-push:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest
-
+    needs: [lint, code_quality, security_scan]
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -40,7 +81,6 @@ jobs:
 
 #docker tag local-image:tagname new-repo:tagname
 #docker push new-repo:tagname
-# ADD SONARQUBE SCAN AND TRIVY SCAN
 
 #   notify-argocd:
 #     name: Notify ArgoCD
@@ -51,3 +91,12 @@ jobs:
 #         run: |
 #           curl -X POST "https://argocd.example.com/api/v1/applications/my-app/sync" \
 #                -H "Authorization: Bearer ${{ secrets.ARGOCD_TOKEN }}"
+
+# deploy:
+#   name: Deploy to Kubernetes with ArgoCD
+#   runs-on: ubuntu-latest
+#   needs: build
+#   steps:
+#     - name: Sync ArgoCD Application
+#       run: |
+#         argocd app sync my-app --server ${{ secrets.ARGOCD_SERVER }} --auth-token ${{ secrets.ARGOCD_AUTH_TOKEN }}

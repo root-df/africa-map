@@ -82,13 +82,16 @@ jobs:
     steps:
       - name: Scan Docker image
         uses: aquasecurity/trivy-action@master
+        env:   
+          IMAGE_NAME: africa-map-image
+          IMAGE_TAG: $(git rev-parse --short HEAD)
         with:
           scan-type: 'image'
           severity: 'HIGH,CRITICAL'
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
-          image-ref: 'my-image:latest'
+          image-ref: '$IMAGE_NAME:$IMAGE_TAG'
 
   push-docker-image:
     name: Push Docker image

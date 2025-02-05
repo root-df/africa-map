@@ -124,7 +124,6 @@ jobs:
     needs: build-scan-push
     runs-on: ubuntu-latest
     steps:
-
       - name: Checkout infra repo containing Helm charts
         uses: actions/checkout@v3
         with:

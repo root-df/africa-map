@@ -128,7 +128,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: root-df/africa-map-infra-helm.git
-          token: ${{ secrets.GITHUB_TOKEN }} #AFRICA_MAP_INFRA_TOKEN
+          token: ${{ secrets.AFRICA_MAP_INFRA_TOKEN }} #GITHUB_TOKEN
           ref: main
 
       - name: Update image tag in values.yaml

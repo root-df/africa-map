@@ -133,7 +133,7 @@ jobs:
 
       - name: Update image tag in values.yaml
         run: |
-          IMAGE_TAG=${{ needs.build-scan-push.outputs.image_tag }}
+          IMAGE_TAG=$(git rev-parse --short HEAD)    #${{ needs.build-scan-push.outputs.image_tag }}
           echo "Updating Helm chart image tag to $IMAGE_TAG"
           
           # Update the image tag in the Helm chart values.yaml (or any relevant file)

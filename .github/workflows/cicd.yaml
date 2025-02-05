@@ -127,7 +127,7 @@ jobs:
       - name: Checkout infra repo containing Helm charts
         uses: actions/checkout@v3
         with:
-          repository: https://github.com/root-df/africa-map-infra-helm.git
+          repository: root-df/africa-map-infra-helm.git
           token: ${{ secrets.GITHUB_TOKEN }} #AFRICA_MAP_INFRA_TOKEN
           ref: main
 

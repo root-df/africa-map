@@ -142,7 +142,7 @@ jobs:
           echo "Updating Helm chart image tag to $IMAGE_TAG"
           
           # Update the image tag in the Helm chart values.yaml (or any relevant file)
-          sed -i 's/tag: ".*"/tag: "$IMAGE_TAG"/' values.yaml    #sed -i "s|tag: \"\"|tag: \"$IMAGE_TAG\"|" values.yaml
+          sed -i "s/tag: \".*\"/tag: \"$IMAGE_TAG\"/" values.yaml   #sed -i "s|tag: \"\"|tag: \"$IMAGE_TAG\"|" values.yaml
           git status
           
       - name: Commit and push changes

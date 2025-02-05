@@ -133,6 +133,8 @@ jobs:
 
       - name: Update image tag in values.yaml
         run: |
+          git branch
+          git status
           pwd
           ls -l
           IMAGE_TAG=${{ needs.build-scan-push.outputs.image_tag }}
@@ -140,6 +142,7 @@ jobs:
           
           # Update the image tag in the Helm chart values.yaml (or any relevant file)
           sed -i "s|tag: \"\"|tag: \"$IMAGE_TAG\"|" ./values.yaml
+          git status
           
       - name: Commit and push changes
         run: |
